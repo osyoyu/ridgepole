@@ -49,7 +49,12 @@ module Ridgepole
         # Keep column_name for expression index support
         # https://github.com/rails/rails/pull/23393
         column_name = [column_name].flatten.map(&:to_s) unless column_name.is_a?(String) && /\W/ === column_name # rubocop:disable Style/CaseEquality
-        options[:name] = options[:name].to_s if options[:name]
+        options[:name] =
+          if options[:name]
+            options[:name].to_s
+          else
+            Class.new.extend(ActiveRecord::ConnectionAdapters::SchemaStatements).index_name(table_name, column_name)
+          end
         @__definition[table_name] ||= {}
         @__definition[table_name][:indices] ||= {}
         idx = options[:name] || column_name
